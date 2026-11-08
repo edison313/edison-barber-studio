@@ -544,26 +544,47 @@ $("#btnAgendaRefresh").onclick = loadAgenda;
 #installHint b{color:#f5c542}
 #installHint .es{display:block;margin-top:4px;color:#c9ccd4;font-size:13px}
 #installHint button{position:absolute;top:6px;right:8px;background:none;border:0;color:#9aa0ab;font-size:20px;line-height:1;padding:6px;cursor:pointer}
+#installHintAndroid{position:fixed;left:12px;right:12px;bottom:76px;z-index:60;background:#1c1e24;color:#f2f3f5;font-size:14px;line-height:1.45;box-shadow:0 8px 24px rgba(0,0,0,.5);border-radius:12px;padding:12px 40px 12px 14px}
+#installHintAndroid b{color:#f5c542}
+#installHintAndroid .es{display:block;margin-top:4px;color:#c9ccd4;font-size:13px}
+#installHintAndroid .x{position:absolute;top:6px;right:8px;background:none;border:0;color:#9aa0ab;font-size:20px;line-height:1;padding:6px;cursor:pointer}
+#installHintAndroid .go{display:inline-block;margin-top:8px;background:#f5c542;color:#14161a;border:0;border-radius:8px;padding:8px 14px;font-weight:700;font-size:14px;cursor:pointer}
 </style>
 <div id="installHint" style="display:none">
   <button id="installHintClose" aria-label="Close">✕</button>
   📲 <b>Add this app to your home screen:</b> tap <b>Share</b> (the square with the arrow) and then <b>&ldquo;Add to Home Screen.&rdquo;</b>
   <span class="es">Agrega esta app a tu pantalla de inicio: toca <b>Compartir</b> (el cuadrado con la flecha) y luego <b>&ldquo;Añadir a pantalla de inicio.&rdquo;</b></span>
 </div>
+<div id="installHintAndroid" style="display:none">
+  <button class="x" id="installHintAndroidClose" aria-label="Close">✕</button>
+  📲 <b>Install this app:</b> tap the button below, or tap <b>⋮</b> (top right) and choose <b>&ldquo;Install app.&rdquo;</b>
+  <span class="es">Instala esta app: toca el botón de abajo, o toca <b>⋮</b> (arriba a la derecha) y elige <b>&ldquo;Instalar app.&rdquo;</b></span>
+  <button class="go" id="installHintAndroidGo" style="display:none">Install / Instalar</button>
+</div>
 <script>
 (function(){
   try{
+    if ("serviceWorker" in navigator) { navigator.serviceWorker.register("sw.js").catch(function(){}); }
     var ua = navigator.userAgent || "";
-    var isIOS = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     var standalone = window.navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
-    if (!isIOS || standalone) return;
+    if (standalone) return;
     if (localStorage.getItem("ebs-install-dismissed")) return;
-    var el = document.getElementById("installHint");
-    el.style.display = "block";
-    document.getElementById("installHintClose").onclick = function(){
-      el.style.display = "none";
-      try{ localStorage.setItem("ebs-install-dismissed","1"); }catch(e){}
-    };
+    function wireClose(id, el){ document.getElementById(id).onclick = function(){ el.style.display = "none"; try{ localStorage.setItem("ebs-install-dismissed","1"); }catch(e){} }; }
+    var isIOS = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if (isIOS) {
+      var el = document.getElementById("installHint");
+      el.style.display = "block";
+      wireClose("installHintClose", el);
+      return;
+    }
+    if (!/android/i.test(ua)) return;
+    var ael = document.getElementById("installHintAndroid");
+    var go = document.getElementById("installHintAndroidGo");
+    var deferred = null;
+    window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); deferred = e; go.style.display = "inline-block"; ael.style.display = "block"; });
+    go.onclick = function(){ if (deferred) { deferred.prompt(); deferred.userChoice.then(function(){ deferred = null; ael.style.display = "none"; }); } };
+    wireClose("installHintAndroidClose", ael);
+    setTimeout(function(){ if (!deferred) ael.style.display = "block"; }, 2500);
   }catch(e){}
 })();
 </script>

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101114">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Edison Barber Studio — Book your appointment</title>
+<style>
+  :root{
+    --bg:#101114; --card:#1b1d22; --card2:#24272e; --accent:#d9a441; --accent2:#f2c14e;
+    --text:#f2f2f2; --muted:#9aa0aa; --line:#2c2f36; --ok:#3ecf6f; --danger:#e5534b;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg); color:var(--text); padding-bottom:96px;}
+  header{position:sticky; top:0; z-index:10; background:#141518; border-bottom:1px solid var(--line);
+         padding:14px 16px; text-align:center;}
+  header h1{margin:0; font-size:20px; letter-spacing:.5px;}
+  header h1 .barber{color:var(--accent);}
+  header p{margin:4px 0 0; font-size:12px; color:var(--muted); line-height:1.6;}
+  header a{color:var(--accent2);}
+  .langbar{margin-top:8px;}
+  .langbar button{background:var(--card2); color:var(--muted); border:1px solid var(--line);
+       border-radius:20px; padding:5px 14px; font-size:12.5px; cursor:pointer; margin:0 3px;}
+  .langbar button.on{color:#141518; background:var(--accent); border-color:var(--accent); font-weight:700;}
+  main{max-width:520px; margin:0 auto; padding:16px;}
+  .view{display:none;} .view.active{display:block; animation:fade .2s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  h2{font-size:17px; margin:18px 0 10px;}
+  .step{display:flex; align-items:center; gap:8px; margin:18px 0 10px;}
+  .step .n{background:var(--accent); color:#141518; font-weight:700; width:26px; height:26px;
+           border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex:none;}
+  .step .t{font-size:15px; font-weight:600;}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px;
+        cursor:pointer; transition:border-color .15s, transform .1s;}
+  .card:active{transform:scale(.98);}
+  .card.sel{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent);}
+  .card img.ph{width:100%; height:86px; object-fit:cover; border-radius:8px; display:block; margin-bottom:8px;}
+  .thumb{width:46px; height:46px; object-fit:cover; border-radius:8px; vertical-align:middle; margin-right:10px;}
+  .card .name{font-weight:700; font-size:15px;}
+  .card .desc{color:var(--muted); font-size:12.5px; margin-top:4px; line-height:1.45;}
+  .card .meta{color:var(--muted); font-size:12.5px; margin-top:6px;}
+  .card .price{color:var(--accent2); font-weight:700; font-size:16px; margin-top:8px;}
+  .days{display:flex; gap:8px; overflow-x:auto; padding:4px 2px 10px;}
+  .day{flex:none; width:64px; background:var(--card); border:1px solid var(--line); border-radius:12px;
+       padding:10px 4px; text-align:center; cursor:pointer;}
+  .day.sel{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent);}
+  .day .dow{font-size:11px; color:var(--muted); text-transform:uppercase;}
+  .day .num{font-size:18px; font-weight:700; margin-top:2px;}
+  .day .mon{font-size:11px; color:var(--muted);}
+  .day.closed{opacity:.35; cursor:not-allowed;}
+  .slots{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+  .slot{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 4px;
+        text-align:center; font-size:14px; cursor:pointer;}
+  .slot.sel{border-color:var(--accent); background:#2a2415; box-shadow:0 0 0 1px var(--accent);}
+  .slot.taken{opacity:.35; text-decoration:line-through; cursor:not-allowed;}
+  label{font-size:13px; color:var(--muted); display:block; margin:12px 0 6px;}
+  input{width:100%; background:var(--card2); border:1px solid var(--line); color:var(--text);
+        border-radius:10px; padding:12px; font-size:15px;}
+  input:focus{outline:none; border-color:var(--accent);}
+  .btn{display:block; width:100%; background:var(--accent); color:#141518; border:0; border-radius:12px;
+       padding:15px; font-size:16px; font-weight:700; margin-top:18px; cursor:pointer;}
+  .btn:active{transform:scale(.99);}
+  .btn.ghost{background:transparent; color:var(--accent); border:1px solid var(--accent);}
+  .btn.danger{background:transparent; color:var(--danger); border:1px solid var(--danger); margin-top:10px;}
+  .btn.small{padding:10px; font-size:14px; margin-top:10px;}
+  .summary{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-top:8px;}
+  .summary .row{display:flex; justify-content:space-between; gap:10px; padding:7px 0; font-size:14.5px;
+                border-bottom:1px dashed var(--line);}
+  .summary .row:last-child{border-bottom:0;}
+  .summary .row b{color:var(--accent2); text-align:right;}
+  .reminder{background:#1d2a1e; border:1px solid #2c4a30; border-radius:12px; padding:12px 14px;
+            font-size:13.5px; margin-top:14px; line-height:1.55;}
+  .reminder b{color:var(--ok);}
+  .ok-hero{text-align:center; padding:26px 10px 6px;}
+  .ok-hero .check{font-size:52px;}
+  .ok-hero h2{margin:8px 0 4px; font-size:19px;}
+  .ok-hero p{color:var(--muted); font-size:14px;}
+  nav{position:fixed; bottom:0; left:0; right:0; background:#141518; border-top:1px solid var(--line);
+      display:flex; z-index:10;}
+  nav button{flex:1; background:none; border:0; color:var(--muted); padding:12px 4px 14px; font-size:11px;
+             cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;}
+  nav button .ic{font-size:20px;}
+  nav button.on{color:var(--accent);}
+  table{width:100%; border-collapse:collapse; font-size:14.5px;}
+  td{padding:11px 4px; border-bottom:1px solid var(--line); vertical-align:top;}
+  td:last-child{text-align:right; color:var(--accent2); font-weight:700; white-space:nowrap;}
+  .appt{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:13px 14px; margin-bottom:10px;}
+  .appt .top{display:flex; justify-content:space-between; font-weight:700; font-size:15px; gap:8px;}
+  .appt .sub{color:var(--muted); font-size:13px; margin-top:5px; line-height:1.5;}
+  .appt.cancelled{opacity:.55;}
+  .empty{color:var(--muted); text-align:center; padding:30px 10px; font-size:14px;}
+  .hint{font-size:12.5px; color:var(--muted); line-height:1.6; background:var(--card);
+        border:1px dashed var(--line); border-radius:10px; padding:10px 12px; margin-top:12px;}
+  .tag{display:inline-block; font-size:11px; background:#2a2415; color:var(--accent2); border:1px solid var(--accent);
+       border-radius:20px; padding:2px 10px; margin-left:6px; vertical-align:middle;}
+  .note{border-bottom:1px solid var(--line); padding:10px 2px; font-size:13.5px; line-height:1.5;}
+  .note .when{color:var(--muted); font-size:12px;}
+  .err{background:#2e1a1a; border:1px solid #5a2b27; color:#f0b3ae; border-radius:12px;
+       padding:12px 14px; font-size:14px; margin-top:14px; line-height:1.5; display:none;}
+  .total-bar{background:#2a2415; border:1px solid var(--accent); border-radius:12px; padding:12px 14px;
+       font-size:14.5px; margin-top:12px; display:none; line-height:1.6;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>✂️ <span class="barber">Edison Barber Studio</span></h1>
+  <p>
+    <span data-i18n="tagline">Book your appointment in seconds</span> · <span data-i18n="owner">Owner</span>: Edison Pena · Tel. (646) 379-8816<br>
+    Email: Veterano7211@yahoo.com<br>
+    📍 <a href="https://www.google.com/maps/search/?api=1&query=132-13%2014%20Ave%20College%20Point%20NY%2011356" target="_blank" rel="noopener">132-13 14 Ave, College Point, NY 11356</a><br>
+    <span data-i18n="location">Whitestone Shopping Center — between the pizzeria and the liquor store</span><br>
+    <span data-i18n="reviews">⭐ 5.0 on Booksy — 260+ verified client reviews</span><br>
+    🎓 <span data-i18n="license">Licensed Cosmetologist — State of New York · Valid through Oct. 2027</span>
+  </p>
+  <div class="langbar">
+    <button id="langEn" class="on">English</button><button id="langEs">Español</button>
+  </div>
+</header>
+
+<main>
+  <!-- ============ BOOK ============ -->
+  <section class="view active" id="v-book">
+    <div class="step"><div class="n">1</div><div class="t" data-i18n="step1">Choose your services (you can pick several)</div></div>
+    <div class="grid" id="svcGrid"></div>
+    <div class="total-bar" id="totalBar"></div>
+
+    <div class="step"><div class="n">2</div><div class="t" data-i18n="step2">Pick a day</div></div>
+    <div class="days" id="dayRow"></div>
+
+    <div class="step"><div class="n">3</div><div class="t" data-i18n="step3">Pick a time</div></div>
+    <div class="slots" id="slotGrid"></div>
+    <div class="empty" id="slotEmpty" data-i18n="pickDayFirst">First pick a service and an open day.</div>
+
+    <div class="step"><div class="n">4</div><div class="t" data-i18n="step4">Your details</div></div>
+    <label data-i18n="name">Name</label>
+    <input id="cliName" data-i18n-ph="namePh" placeholder="Your name" autocomplete="name">
+    <label data-i18n="phone">Phone</label>
+    <input id="cliPhone" data-i18n-ph="phonePh" placeholder="e.g. 646 123 4567" inputmode="tel" autocomplete="tel">
+
+    <div class="err" id="bookErr"></div>
+    <button class="btn" id="btnConfirm" data-i18n="confirm">Confirm booking</button>
+    <div class="summary" id="bookSummary" style="display:none"></div>
+  </section>
+
+  <!-- ============ DONE ============ -->
+  <section class="view" id="v-done">
+    <div class="ok-hero">
+      <div class="check">✅</div>
+      <h2 data-i18n="booked">Appointment booked!</h2>
+      <p data-i18n="bookedSub">See you soon. Please arrive 5 minutes early.</p>
+    </div>
+    <div class="summary" id="doneSummary"></div>
+    <div class="reminder" data-i18n="reminderNote">⏰ We'll have your appointment on the barber's agenda right away.</div>
+    <button class="btn ghost" id="btnNew" data-i18n="newBooking">Make another booking</button>
+  </section>
+
+  <!-- ============ PRICES ============ -->
+  <section class="view" id="v-prices">
+    <h2><span data-i18n="priceList">Price list</span> <span class="tag" data-i18n="subjectChange">subject to change</span></h2>
+    <div class="summary"><table id="priceTable"></table></div>
+    <div class="hint" data-i18n="cashNote">💈 Prices are cash. Paying by card adds 5%, same as the shop's posted list.</div>
+  </section>
+
+  <!-- ============ MY APPOINTMENTS ============ -->
+  <section class="view" id="v-mine">
+    <h2 data-i18n="myAppts">My appointments</h2>
+    <label data-i18n="phoneLookup">Your phone number</label>
+    <input id="minePhone" inputmode="tel" autocomplete="tel" placeholder="646 379 8816">
+    <button class="btn small" id="btnMine" data-i18n="search">Search</button>
+    <div style="height:14px"></div>
+    <div id="apptList"></div>
+  </section>
+
+  <!-- ============ AGENDA (barber) ============ -->
+  <section class="view" id="v-agenda">
+    <h2 data-i18n="agenda">Agenda — Edison Pena</h2>
+    <div id="agendaGate">
+      <label data-i18n="barberPhone">Barber's phone number</label>
+      <input id="agendaKey" inputmode="tel" placeholder="646 379 8816">
+      <div class="err" id="agendaErr"></div>
+      <button class="btn small" id="btnAgenda" data-i18n="enter">Enter</button>
+    </div>
+    <div id="agendaBody" style="display:none">
+      <h2 data-i18n="upcoming">Upcoming appointments</h2>
+      <div id="agendaList"></div>
+      <h2 data-i18n="notifLog">Notifications log</h2>
+      <div id="notifList"></div>
+      <button class="btn ghost small" id="btnAgendaRefresh" data-i18n="refresh">Refresh</button>
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button id="nav-book" class="on"><span class="ic">💈</span><span data-i18n="navBook">Book</span></button>
+  <button id="nav-prices"><span class="ic">💲</span><span data-i18n="navPrices">Prices</span></button>
+  <button id="nav-mine"><span class="ic">📅</span><span data-i18n="navMine">My appts</span></button>
+  <button id="nav-agenda"><span class="ic">🔒</span><span data-i18n="navAgenda">Agenda</span></button>
+</nav>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+
+const I18N = {
+  en: {
+    tagline:"Book your appointment in seconds", owner:"Owner",
+    location:"Whitestone Shopping Center — between the pizzeria and the liquor store",
+    reviews:"⭐ 5.0 on Booksy — 260+ verified client reviews",
+    license:"Licensed Cosmetologist — State of New York · Valid through Oct. 2027",
+    step1:"Choose your services (you can pick several)", step2:"Pick a day", step3:"Pick a time",
+    step4:"Your details", pickDayFirst:"First pick a service and an open day.",
+    name:"Name", namePh:"Your name", phone:"Phone", phonePh:"e.g. 646 123 4567",
+    confirm:"Confirm booking", booked:"Appointment booked!",
+    bookedSub:"See you soon. Please arrive 5 minutes early.",
+    reminderNote:"⏰ We'll have your appointment on the barber's agenda right away.",
+    newBooking:"Make another booking", priceList:"Price list", subjectChange:"subject to change",
+    cashNote:"💈 Prices are cash. Paying by card adds 5%, same as the shop's posted list.",
+    myAppts:"My appointments", phoneLookup:"Your phone number", search:"Search",
+    agenda:"Agenda — Edison Pena", barberPhone:"Barber's phone number", enter:"Enter",
+    upcoming:"Upcoming appointments", notifLog:"Notifications log", refresh:"Refresh",
+    navBook:"Book", navPrices:"Prices", navMine:"My appts", navAgenda:"Agenda",
+    closed:"Closed", noSlots:"No times left this day.", pickServiceFirst:"Pick at least one service first.",
+    total:"Total", duration:"Duration", min:"min", services:"Services", when:"When",
+    client:"Client", cancel:"Cancel appointment", cancelSure:"Tap again to confirm cancellation",
+    cancelled:"Cancelled", confirmed:"Confirmed", noAppts:"No appointments found for that number.",
+    noUpcoming:"No upcoming appointments.", agendaWrong:"That number doesn't match the barber's.",
+    errName:"Please enter your name.", errPhone:"Please enter a valid phone number.",
+    errDay:"Please pick a day and a time.",
+    errSlotTaken:"That time was just taken. Please pick another time.",
+    errOutside:"That time is outside working hours for the full service.",
+    errClosed:"The shop is closed that day.",
+    errGeneric:"Something went wrong. Please try again.",
+    dayNames:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+    monthNames:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+    endsAt:"ends", at:"at"
+  },
+  es: {
+    tagline:"Reserva tu cita en segundos", owner:"Propietario",
+    location:"Whitestone Shopping Center — entre la pizzería y el liquor store",
+    reviews:"⭐ 5.0 en Booksy — más de 260 reseñas verificadas de clientes",
+    license:"Licenciado en Cosmetología — Estado de Nueva York · Vigente hasta oct. 2027",
+    step1:"Elige tus servicios (puedes elegir varios)", step2:"Elige el día", step3:"Elige la hora",
+    step4:"Tus datos", pickDayFirst:"Primero elige un servicio y un día disponible.",
+    name:"Nombre", namePh:"Tu nombre", phone:"Teléfono", phonePh:"Ej. 646 123 4567",
+    confirm:"Confirmar reserva", booked:"¡Cita reservada!",
+    bookedSub:"Te esperamos. Llega 5 minutos antes.",
+    reminderNote:"⏰ Tu cita aparecerá de inmediato en la agenda del barbero.",
+    newBooking:"Hacer otra reserva", priceList:"Lista de precios", subjectChange:"sujeto a cambios",
+    cashNote:"💈 Precios en efectivo. Con tarjeta se suma un 5%, igual que en el listado del local.",
+    myAppts:"Mis citas", phoneLookup:"Tu número de teléfono", search:"Buscar",
+    agenda:"Agenda — Edison Pena", barberPhone:"Teléfono del barbero", enter:"Entrar",
+    upcoming:"Próximas citas", notifLog:"Registro de avisos", refresh:"Actualizar",
+    navBook:"Reservar", navPrices:"Precios", navMine:"Mis citas", navAgenda:"Agenda",
+    closed:"Cerrado", noSlots:"No quedan horas este día.", pickServiceFirst:"Elige al menos un servicio primero.",
+    total:"Total", duration:"Duración", min:"min", servicios:"Servicios", when:"Cuándo",
+    client:"Cliente", cancel:"Cancelar cita", cancelSure:"Toca otra vez para confirmar la cancelación",
+    cancelled:"Cancelada", confirmed:"Confirmada", noAppts:"No se encontraron citas con ese número.",
+    noUpcoming:"No hay citas próximas.", agendaWrong:"Ese número no coincide con el del barbero.",
+    errName:"Escribe tu nombre, por favor.", errPhone:"Escribe un número de teléfono válido.",
+    errDay:"Elige un día y una hora.",
+    errSlotTaken:"Esa hora acaba de ocuparse. Elige otra hora.",
+    errOutside:"Esa hora queda fuera del horario para todo el servicio.",
+    errClosed:"El local está cerrado ese día.",
+    errGeneric:"Algo salió mal. Inténtalo de nuevo.",
+    dayNames:["lun","mar","mié","jue","vie","sáb","dom"],
+    monthNames:["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"],
+    endsAt:"termina", at:"a las"
+  }
+};
+
+let LANG = localStorage.getItem("ebs-lang") || "en";
+let CONFIG = null;
+const sel = { services:new Set(), date:null, startMin:null };
+
+const t = k => I18N[LANG][k];
+const fmtMin = m => { const h=Math.floor(m/60), mm=m%60, s=h<12?"AM":"PM", h12=h%12||12;
+  return h12+":"+String(mm).padStart(2,"0")+" "+s; };
+const isoOf = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const pyWeekday = d => (d.getDay()+6)%7; // Mon=0..Sun=6
+const totals = () => { let mins=0, price=0;
+  sel.services.forEach(id => { const s=CONFIG.services.find(x=>x.id===id); mins+=s.mins; price+=s.price; });
+  return {mins, price}; };
+
+function applyLang(){
+  document.documentElement.lang = LANG;
+  document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => el.placeholder = t(el.dataset.i18nPh));
+  $("#langEn").classList.toggle("on", LANG==="en");
+  $("#langEs").classList.toggle("on", LANG==="es");
+  renderServices(); renderDays(); renderSlots(); renderPrices(); renderTotal();
+}
+$("#langEn").onclick = () => { LANG="en"; localStorage.setItem("ebs-lang",LANG); applyLang(); };
+$("#langEs").onclick = () => { LANG="es"; localStorage.setItem("ebs-lang",LANG); applyLang(); };
+
+function show(view){
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  $("#v-"+view).classList.add("active");
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("on"));
+  const navBtn = $("#nav-"+view); if (navBtn) navBtn.classList.add("on");
+  window.scrollTo(0,0);
+}
+$("#nav-book").onclick = () => show("book");
+$("#nav-prices").onclick = () => show("prices");
+$("#nav-mine").onclick = () => { show("mine"); if ($("#minePhone").value) loadMine(); };
+$("#nav-agenda").onclick = () => { show("agenda"); if (sessionStorage.getItem("ebs-agenda-key")) loadAgenda(); };
+
+function renderServices(){
+  const g = $("#svcGrid"); g.innerHTML = "";
+  CONFIG.services.forEach(s => {
+    const d = document.createElement("div");
+    d.className = "card" + (sel.services.has(s.id) ? " sel" : "");
+    d.innerHTML = `<img class="ph" src="${s.img}" alt=""><div class="name">${s.name}</div>
+      <div class="desc">${LANG==="es" ? s.descEs : s.descEn}</div>
+      <div class="meta">⏱ ${s.mins} ${t("min")}</div><div class="price">$${s.price}</div>`;
+    d.onclick = () => { sel.services.has(s.id) ? sel.services.delete(s.id) : sel.services.add(s.id);
+      sel.startMin = null; renderServices(); renderTotal(); renderSlots(); };
+    g.appendChild(d);
+  });
+}
+
+function renderTotal(){
+  const bar = $("#totalBar"), {mins, price} = totals();
+  if (!sel.services.size) { bar.style.display = "none"; return; }
+  bar.style.display = "block";
+  const names = [...sel.services].map(id => CONFIG.services.find(x=>x.id===id).name).join(" + ");
+  bar.innerHTML = `<b>${t("total")}:</b> $${price} · <b>${t("duration")}:</b> ${mins} ${t("min")}<br>${names}`;
+}
+
+function renderDays(){
+  const row = $("#dayRow"); row.innerHTML = "";
+  const today = new Date(); today.setHours(0,0,0,0);
+  for (let i=0; i<14; i++){
+    const d = new Date(today); d.setDate(d.getDate()+i);
+    const blocks = CONFIG.hours[String(pyWeekday(d))] || [];
+    const el = document.createElement("div");
+    el.className = "day" + (sel.date===isoOf(d) ? " sel" : "") + (!blocks.length ? " closed" : "");
+    el.innerHTML = `<div class="dow">${t("dayNames")[pyWeekday(d)]}</div><div class="num">${d.getDate()}</div>
+      <div class="mon">${blocks.length ? t("monthNames")[d.getMonth()] : t("closed")}</div>`;
+    if (blocks.length) el.onclick = () => { sel.date = isoOf(d); sel.startMin = null; renderDays(); renderSlots(); };
+    row.appendChild(el);
+  }
+}
+
+async function renderSlots(){
+  const grid = $("#slotGrid"), empty = $("#slotEmpty");
+  grid.innerHTML = "";
+  if (!sel.date || !sel.services.size) {
+    empty.style.display = "block";
+    empty.textContent = !sel.services.size && sel.date ? t("pickServiceFirst") : t("pickDayFirst");
+    return;
+  }
+  empty.style.display = "none";
+  let dayBlocks = [];
+  try {
+    const r = await fetch("/api/day?date="+sel.date); const j = await r.json();
+    dayBlocks = j.blocks || [];
+  } catch(e) { /* offline: server re-validates anyway */ }
+  const d = new Date(sel.date+"T12:00:00");
+  const blocks = CONFIG.hours[String(pyWeekday(d))] || [];
+  const {mins} = totals();
+  const now = new Date();
+  const isToday = sel.date === isoOf(now);
+  const nowMin = now.getHours()*60 + now.getMinutes();
+  let count = 0;
+  blocks.forEach(([b0,b1]) => {
+    for (let s=b0; s+mins<=b1; s+=CONFIG.slotStep){
+      const e = s+mins;
+      const taken = dayBlocks.some(b => s < b.endMin && b.startMin < e);
+      if (taken || (isToday && s <= nowMin)) continue;
+      count++;
+      const el = document.createElement("div");
+      el.className = "slot" + (sel.startMin===s ? " sel" : "");
+      el.textContent = fmtMin(s);
+      el.onclick = () => { sel.startMin = s; renderSlots(); renderSummary(); };
+      grid.appendChild(el);
+    }
+  });
+  if (!count) { empty.style.display = "block"; empty.textContent = t("noSlots"); }
+}
+
+function renderSummary(){
+  const box = $("#bookSummary");
+  if (!sel.date || sel.startMin===null || !sel.services.size) { box.style.display="none"; return; }
+  const {mins, price} = totals();
+  const names = [...sel.services].map(id => CONFIG.services.find(x=>x.id===id).name).join(" + ");
+  box.style.display = "block";
+  box.innerHTML = `
+    <div class="row"><span>${t("services")}</span><b>${names}</b></div>
+    <div class="row"><span>${t("when")}</span><b>${sel.date} · ${fmtMin(sel.startMin)} (${t("endsAt")} ${fmtMin(sel.startMin+mins)})</b></div>
+    <div class="row"><span>${t("duration")}</span><b>${mins} ${t("min")}</b></div>
+    <div class="row"><span>${t("total")}</span><b>$${price}</b></div>`;
+}
+
+function showBookError(msg){
+  const e = $("#bookErr"); e.textContent = msg; e.style.display = "block";
+}
+
+$("#btnConfirm").onclick = async () => {
+  $("#bookErr").style.display = "none";
+  const name = $("#cliName").value.trim(), phone = $("#cliPhone").value.trim();
+  if (!sel.services.size) return showBookError(t("pickServiceFirst"));
+  if (!sel.date || sel.startMin===null) return showBookError(t("errDay"));
+  if (!name) return showBookError(t("errName"));
+  if (phone.replace(/\D/g,"").length < 7) return showBookError(t("errPhone"));
+  const body = { name, phone, services:[...sel.services], date: sel.date,
+                 start: String(Math.floor(sel.startMin/60)).padStart(2,"0")+":"+String(sel.startMin%60).padStart(2,"0") };
+  try {
+    const r = await fetch("/api/book", { method:"POST", headers:{"Content-Type":"application/json"},
+                                         body: JSON.stringify(body) });
+    const j = await r.json();
+    if (!j.ok) {
+      const map = { slot_taken:"errSlotTaken", outside_hours:"errOutside", closed:"errClosed",
+                    date_out_of_range:"errOutside", invalid_date:"errGeneric" };
+      showBookError(t(map[j.error] || "errGeneric"));
+      renderSlots();
+      return;
+    }
+    const a = j.appointment;
+    localStorage.setItem("ebs-my-phone", phone);
+    $("#minePhone").value = phone;
+    $("#doneSummary").innerHTML = `
+      <div class="row"><span>${t("services")}</span><b>${a.services.join(" + ")}</b></div>
+      <div class="row"><span>${t("when")}</span><b>${a.date} · ${a.startTime} – ${a.endTime}</b></div>
+      <div class="row"><span>${t("client")}</span><b>${a.clientName}</b></div>
+      <div class="row"><span>${t("total")}</span><b>$${a.totalPrice}</b></div>`;
+    show("done");
+  } catch(e) { showBookError(t("errGeneric")); }
+};
+$("#btnNew").onclick = () => { sel.services.clear(); sel.startMin = null;
+  $("#cliName").value=""; $("#cliPhone").value="";
+  renderServices(); renderTotal(); renderSlots(); show("book"); };
+
+function renderPrices(){
+  const tb = $("#priceTable"); tb.innerHTML = "";
+  CONFIG.services.forEach(s => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td><img class="thumb" src="${s.img}" alt="">${s.name}
+      <div style="color:var(--muted); font-size:12.5px; margin-top:3px">${LANG==="es" ? s.descEs : s.descEn} · ⏱ ${s.mins} ${t("min")}</div></td>
+      <td>$${s.price}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+/* ------- My appointments ------- */
+async function loadMine(){
+  const phone = $("#minePhone").value.trim();
+  const list = $("#apptList");
+  if (phone.replace(/\D/g,"").length < 7) { list.innerHTML = `<div class="empty">${t("errPhone")}</div>`; return; }
+  localStorage.setItem("ebs-my-phone", phone);
+  const r = await fetch("/api/mine?phone="+encodeURIComponent(phone));
+  const j = await r.json();
+  const todayIso = isoOf(new Date());
+  const upcoming = (j.appointments||[]).filter(a => a.status==="confirmed" && a.date >= todayIso)
+                                        .sort((a,b) => (a.date+a.startTime).localeCompare(b.date+b.startTime));
+  const past = (j.appointments||[]).filter(a => !(a.status==="confirmed" && a.date >= todayIso));
+  if (!upcoming.length && !past.length) { list.innerHTML = `<div class="empty">${t("noAppts")}</div>`; return; }
+  list.innerHTML = "";
+  [...upcoming.map(a=>({a,can:true})), ...past.map(a=>({a,can:false}))].forEach(({a, can}) => {
+    const el = document.createElement("div");
+    el.className = "appt" + (a.status==="cancelled" ? " cancelled" : "");
+    el.innerHTML = `<div class="top"><span>${a.date}</span><span>${a.startTime}</span></div>
+      <div class="sub">${a.services.join(" + ")} · ${a.totalMins} ${t("min")} · $${a.totalPrice}<br>
+      ${a.status==="cancelled" ? "❌ "+t("cancelled") : "✅ "+t("confirmed")}</div>`;
+    if (can) {
+      const b = document.createElement("button");
+      b.className = "btn danger small"; b.textContent = t("cancel");
+      let armed = false;
+      b.onclick = async () => {
+        if (!armed) { armed = true; b.textContent = t("cancelSure"); return; }
+        await fetch("/api/cancel", { method:"POST", headers:{"Content-Type":"application/json"},
+                                     body: JSON.stringify({ id:a.id, phone }) });
+        loadMine(); renderSlots();
+      };
+      el.appendChild(b);
+    }
+    list.appendChild(el);
+  });
+}
+$("#btnMine").onclick = loadMine;
+
+/* ------- Agenda (barber) ------- */
+async function loadAgenda(){
+  const key = sessionStorage.getItem("ebs-agenda-key") || $("#agendaKey").value.trim();
+  const err = $("#agendaErr"); err.style.display = "none";
+  try {
+    const r = await fetch("/api/agenda?key="+encodeURIComponent(key));
+    const j = await r.json();
+    if (!j.ok) { err.textContent = t("agendaWrong"); err.style.display = "block";
+                 sessionStorage.removeItem("ebs-agenda-key"); return; }
+    sessionStorage.setItem("ebs-agenda-key", key);
+    $("#agendaGate").style.display = "none";
+    $("#agendaBody").style.display = "block";
+    const list = $("#agendaList"); list.innerHTML = "";
+    if (!j.appointments.length) list.innerHTML = `<div class="empty">${t("noUpcoming")}</div>`;
+    j.appointments.forEach(a => {
+      const el = document.createElement("div");
+      el.className = "appt";
+      el.innerHTML = `<div class="top"><span>${a.date}</span><span>${a.startTime} – ${a.endTime}</span></div>
+        <div class="sub"><b style="color:var(--text)">${a.clientName}</b> · ${a.clientPhone}<br>
+        ${a.services.join(" + ")} · ${a.totalMins} ${t("min")} · $${a.totalPrice}</div>`;
+      list.appendChild(el);
+    });
+    const nl = $("#notifList"); nl.innerHTML = "";
+    j.notifications.forEach(n => {
+      const el = document.createElement("div");
+      el.className = "note";
+      el.innerHTML = `${n.message}<div class="when">${n.createdAt.replace("T"," ").slice(0,16)}</div>`;
+      nl.appendChild(el);
+    });
+  } catch(e) { err.textContent = t("errGeneric"); err.style.display = "block"; }
+}
+$("#btnAgenda").onclick = loadAgenda;
+$("#btnAgendaRefresh").onclick = loadAgenda;
+
+/* ------- boot ------- */
+(async () => {
+  const savedPhone = localStorage.getItem("ebs-my-phone");
+  if (savedPhone) $("#minePhone").value = savedPhone;
+  try {
+    const r = await fetch("/api/config"); CONFIG = await r.json();
+  } catch(e) {
+    document.querySelector("main").innerHTML = '<div class="empty">⚠️ ' + t("errGeneric") + "</div>";
+    return;
+  }
+  // default day: today if open, else next open day
+  const today = new Date(); today.setHours(0,0,0,0);
+  for (let i=0; i<14; i++){
+    const d = new Date(today); d.setDate(d.getDate()+i);
+    if ((CONFIG.hours[String(pyWeekday(d))] || []).length) { sel.date = isoOf(d); break; }
+  }
+  applyLang(); renderSummary();
+})();
+</script>
+</body>
+</html>

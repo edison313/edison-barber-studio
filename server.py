@@ -482,8 +482,10 @@ class Handler(BaseHTTPRequestHandler):
         self.send_json({"ok": True, "appointment": appt_to_dict(row)})
 
     def api_agenda(self, qs):
-        key = (qs.get("key") or [""])[0]
-        if digits_of(key) != BARBER_KEY_DIGITS:
+        key = digits_of((qs.get("key") or [""])[0])
+        if len(key) == 11 and key.startswith("1"):
+            key = key[1:]
+        if key != BARBER_KEY_DIGITS:
             return self.send_json({"ok": False, "error": "forbidden"}, 403)
         today = datetime.now(TZ).date().isoformat()
         with _db_lock, db() as conn:

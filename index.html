@@ -538,5 +538,34 @@ $("#btnAgendaRefresh").onclick = loadAgenda;
   applyLang(); renderSummary();
 })();
 </script>
+<!-- ===== Install hint (iOS Safari, not installed yet) ===== -->
+<style>
+#installHint{position:fixed;left:12px;right:12px;bottom:76px;z-index:60;background:#1d1f26;border:1px solid #f5c542;border-radius:14px;padding:12px 40px 12px 14px;color:#f2f3f5;font-size:14px;line-height:1.45;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+#installHint b{color:#f5c542}
+#installHint .es{display:block;margin-top:4px;color:#c9ccd4;font-size:13px}
+#installHint button{position:absolute;top:6px;right:8px;background:none;border:0;color:#9aa0ab;font-size:20px;line-height:1;padding:6px;cursor:pointer}
+</style>
+<div id="installHint" style="display:none">
+  <button id="installHintClose" aria-label="Close">✕</button>
+  📲 <b>Add this app to your home screen:</b> tap <b>Share</b> (the square with the arrow) and then <b>&ldquo;Add to Home Screen.&rdquo;</b>
+  <span class="es">Agrega esta app a tu pantalla de inicio: toca <b>Compartir</b> (el cuadrado con la flecha) y luego <b>&ldquo;Añadir a pantalla de inicio.&rdquo;</b></span>
+</div>
+<script>
+(function(){
+  try{
+    var ua = navigator.userAgent || "";
+    var isIOS = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    var standalone = window.navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
+    if (!isIOS || standalone) return;
+    if (localStorage.getItem("ebs-install-dismissed")) return;
+    var el = document.getElementById("installHint");
+    el.style.display = "block";
+    document.getElementById("installHintClose").onclick = function(){
+      el.style.display = "none";
+      try{ localStorage.setItem("ebs-install-dismissed","1"); }catch(e){}
+    };
+  }catch(e){}
+})();
+</script>
 </body>
 </html>

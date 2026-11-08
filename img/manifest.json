@@ -1,0 +1,82 @@
+{
+  "photos": [
+    {
+      "service": "Regular Cut",
+      "file": "regular-cut.jpg",
+      "source_page": "https://by-captain.com/",
+      "width": 1280,
+      "height": 854
+    },
+    {
+      "service": "Fades",
+      "file": "fades.jpg",
+      "source_page": "https://booksy.com/pt-us/565510_cristian_barber-shop_38720_virginia-beach",
+      "width": 1374,
+      "height": 1374
+    },
+    {
+      "service": "Hot Towel Shave",
+      "file": "hot-towel-shave.jpg",
+      "source_page": "",
+      "width": 720,
+      "height": 900
+    },
+    {
+      "service": "Beard Trim Shape Up",
+      "file": "beard-trim.jpg",
+      "source_page": "https://www.beardinstitute.com",
+      "width": 1000,
+      "height": 667
+    },
+    {
+      "service": "Shape Up With Razor",
+      "file": "shape-up.jpg",
+      "source_page": "https://www.desertcart.com.pa/products/410273911-beauticone-straight-razor-for-men-professional-barber-razor-with-100-single-edge-blades-wooden-handle",
+      "width": 700,
+      "height": 700
+    },
+    {
+      "service": "Kids Under 12",
+      "file": "kids-cut.jpg",
+      "source_page": "https://dhian.eu.org/tondeuse-a-cheveux-en-espagnol.html",
+      "width": 1000,
+      "height": 667
+    },
+    {
+      "service": "Goatee Trim And Shape",
+      "file": "goatee.jpg",
+      "source_page": "https://booksy.com/en-us/93965_finest-clipz_barber-shop_28776_haledon",
+      "width": 2340,
+      "height": 2340
+    },
+    {
+      "service": "Shampoo",
+      "file": "shampoo.jpg",
+      "source_page": "https://www.popbela.com/beauty/make-up/patchouli-wangi-apa-go25q3-00-b57n8-xvg31d",
+      "width": 1200,
+      "height": 801
+    },
+    {
+      "service": "Face Mask",
+      "file": "face-mask.jpg",
+      "source_page": "https://barberakkad.nl/about/",
+      "width": 706,
+      "height": 471
+    },
+    {
+      "service": "Eyebrows",
+      "file": "eyebrows.jpg",
+      "source_page": "https://lfayou.com/course-page/care/1/61",
+      "width": 900,
+      "height": 505
+    },
+    {
+      "service": "Haircut Shave & Shampoo",
+      "file": "full-service.jpg",
+      "source_page": "https://www.groupon.com/deals/sphere-hair-studio",
+      "width": 870,
+      "height": 524
+    }
+  ],
+  "missing": []
+}

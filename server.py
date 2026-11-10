@@ -349,6 +349,10 @@ class Handler(BaseHTTPRequestHandler):
     def serve_static(self, path):
         if path in ("/", ""):
             path = "/index.html"
+        if path == "/privacy-policy":
+            path = "/privacy-policy.html"
+        if path == "/terms":
+            path = "/terms.html"
         full = os.path.normpath(os.path.join(BASE_DIR, path.lstrip("/")))
         if not full.startswith(BASE_DIR) or not os.path.isfile(full):
             return self.send_json({"ok": False, "error": "not_found"}, 404)
